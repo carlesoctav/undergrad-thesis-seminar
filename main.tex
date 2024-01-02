@@ -195,7 +195,7 @@
 
 
 \begin{frame}
-\frametitle{Pemeringkatan Teks 3}
+\frametitle{\f{File} Kueri}
 
     \begin{table}[!ht]
         \centering
@@ -215,7 +215,7 @@
 
 
 \begin{frame}
-\frametitle{Pemeringkatan Teks 4}
+\frametitle{File \f{Judgements}}
 
     \begin{table}[!ht]
         \centering
@@ -347,16 +347,10 @@
     \end{figure}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Nilai IDF}
-    \begin{figure}[!ht]
-        \centering
-        \includegraphics[width=1\textwidth]{assets/pics/idf-graph.png}
-        \end{figure}
-\end{frame}
 
 \begin{frame}
     \frametitle{Score}
+    score dihitung adalah jumlah TF-IDF dari kata-kata yang ada pada kueri dan teks.
     $$\text{score}(q,d,\mathcal{D}) = \sum_{t \in T_q \cap T_d} \text{TF-IDF}(t, d, \mathcal{D})$$
     \begin{flalign*}
         T_q &= \{t_1, t_2, \dots, t_{L_1}\} = \text{kumpulan kata pada } q, && \\
@@ -388,6 +382,106 @@
 \end{frame}
 
 
+\section{Metode}
+
+\begin{frame}
+    \frametitle{BERT}
+   \f{Bidirectional Encoder Representations from Transformers} (BERT) merupakan model representasi teks yang dikembangkan oleh \cite{bertori} yang dapat merepresentasikan teks secara kontekstual dengan menggunakan arsitektur \f{encoder} dari \f{transformer} \citep{transformerori}.
+
+   \begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{assets/pics/final-transformers-encoder.png}
+    \end{figure}
+
+    Keluaran dari model BERT adalah vektor representasi kontekstual dari setiap token (kata atau subkata) pada teks. 
+    \begin{align}
+    \label{equ:bert-input-start}
+    \text{BERT}((\text{\code{[CLS]}}, t_1, t_2, \dots, t_L, \text{\code{[SEP]}})) &= (\mathbf{h}_{\text{\code{[CLS]}}}, \mathbf{h}_{t_1}, \mathbf{h}_{t_2}, \dots, \mathbf{h}_{t_L}, \mathbf{h}_{\text{\code{[SEP]}}}).
+    \end{align}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Self-Attention}
+    BERT (atau \f{transformer}) menggunakan mekanisme \f{self-attention} menghasilkan representasi vektor kontekstual dari setiap token pada teks.
+
+    Untuk kumpulan vektor representasi tak kontekstual dari kumpulan token $\mathbf{E}\in \mathbb{R}^{L \times d{{\text{token}}}}$, vektor representasi kontekstual dari kumpulan token $\mathbf{E}$ sebagai rata-rata terbobot dari seluruh token pada $\mathbf{EW^v}$ dengan bobot yang dihitung dari $\mathbf{EW^q}$ dan $\mathbf{EW^k}$.
+    
+\begin{align*}
+    \text{Self-Attention}(\mathbf{E})  = \text{Softmax}(\frac{\mathbf{E} \mathbf{W}^q (\mathbf{E} \mathbf{W}^k)^{\top}}{\sqrt{d_{\text{token}}}}) (\mathbf{E} \mathbf{W}^v) \in \mathbb{R}^{L \times d_{\text{token}}}
+\end{align*}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Self-Attention}
+    \f{Self-attention} digunakan untuk membangun dan memperkuat konteks kata pada kalimat.
+
+    \begin{figure}[!ht]
+		\centering
+		\includegraphics[width=1\textwidth]{assets/pics/self-attn-example.png}
+		\label{fig:self-attention-example}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{\f{pre-training} dan \f{fine tuning}}
+
+Tahapan pembelajaran untuk BERT:
+\begin{enumerate}
+    \item \f{Pre-training} menggunakan data tidak berlabel dalam jumlah yang banyak untuk mempelajari representasi bahasa secara umum, melatih model BERT dari awal untuk menghasilkan vektor representasi kontekstual dari setiap token pada teks yang baik.
+    \item \f{Fine-tuning} menggunakan data berlabel, dengan jumlah yang lebih sedikit, untuk mempelajari tugas tertentu, seperti pemeringkatan teks.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\f{pre-training} BERT Berbahasa Indonesia}
+
+    \f{Pre-training} BERT untuk bahasa Indonesia dilakukan dengan menggunakan korpus Wikipedia bahasa Indonesia dengan 74 Juta kata, artikel berita dari Kompas, Tempo, dan Liputan6 dengan 55 Juta kata, dan korpus web bahasa Indonesia dengan 90 Juta kata. Model IndoBERT dilatih selama 2.4 Juta iterasi (180 epoch) \citep{indobert}.
+
+\end{frame}
+    
+
+\begin{frame}
+    \frametitle{$\text{BERT}_{\text{CAT}}$}
+
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=0.7\textwidth]{assets/pics/bertcat.png}
+    \end{figure}
+
+    $\text{BERT}_{\text{CAT}}$ menghitung skor relevansi dari pasangan (kueri, teks) dengan melakukan \f{soft classification} antara pasangan (kueri, teks).
+
+    \begin{align*}
+        \text{score}(q,d) &= P(\text{relevance} = 1 | q, d) = \sigma\left(  \mathbf{h}_{\text{[CLS]}} \mathbf{W}^{\text{CLS}}+\mathbf{b}^{\text{CLS}} \right) \in (0,1), \\
+        \mathbf{h}_{\text{\code{[CLS]}}} &= \text{BERT}((\text{\code{[CLS]}}, q, \text{\code{[SEP]}}, d, \text{\code{[SEP]}}))_{\text{\code{[CLS]}}} \in \mathbb{R}^{d_{\text{token}}},
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{$\text{BERT}_{\text{CAT}}$}
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=0.7\textwidth]{assets/pics/neural-ir.png}
+        \label{fig:bert-cat-withbm25}
+    \end{figure}
+    $\text{BERT}_{\text{CAT}}$ biasanya digunakan bersama dengan model BM25 disebabkan oleh keterbatasan komputasi $\text{BERT}_{\text{CAT}}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{$\text{BERT}_{\text{DOT}}$}
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[width=0.75\textwidth]{assets/pics/bertdot.png}
+    \end{figure}
+    $\text{BERT}_{\text{DOT}}$ menghitung skor relevansi dari pasangan (kueri, teks) dengan melakukan \f{dot product} antara vektor representasi kontekstual dari kueri dan teks.
+    \begin{align*}
+        \text{score}(q,d) &= \mathbf{q}_{\text{\code{[CLS]}}} \cdot \mathbf{d}_{\text{\code{[CLS]}}} \in \mathbb{R}, \\
+        \mathbf{q}_{\text{\code{[CLS]}}} &= \text{BERT}((\text{\code{[CLS]}}, q, \text{\code{[SEP]}}))_{\text{\code{[CLS]}}} \in \mathbb{R}^{d_{\text{token}}}, \\
+        \mathbf{d}_{\text{\code{[CLS]}}} &= \text{BERT}((\text{\code{[CLS]}}, d, \text{\code{[SEP]}}))_{\text{\code{[CLS]}}} \in \mathbb{R}^{d_{\text{token}}}.
+    \end{align*}
+\end{frame}
 
 \section{Simulasi Dan Analisis Hasil}
 
@@ -635,9 +729,9 @@
         \item Arsitektur $\text{BERT}_\text{DOT}$ digunakan untuk melakukan pemeringkatan teks.
         \item Fungsi loss yang digunakan adalah \f{Mean squared error} dengan prinsip \f{knowledge distillation} \citep{knowledgedistill}.
     \end{enumerate}
-    \begin{align}
+    \begin{align*}
         L(s_i, t_i) = \left((\mid \mid M(s_i) - \hat{M}(s_i) \mid \mid)^2 + (\mid\mid M(s_i) - \hat{M}(t_i) \mid\mid)^2 \right),
-    \end{align}
+    \end{align*}
     dengan keterangan sebagai berikut:
     \begin{flalign*}
         M        &= \text{pemetaan vektor oleh model guru},&& \\
