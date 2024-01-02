@@ -4,3 +4,10 @@
 \beamer@slide {fig:recall-precision}{23}
 \beamer@slide {fig:reciprocal-rank}{25}
 \beamer@slide {fig:ndcg}{27}
+\beamer@slide {tab:indobert-cat-hyperparameter}{40}
+\beamer@slide {tab:indobert-dot-hyperparameter}{43}
+\beamer@slide {tab:hardnegsbm25}{45}
+\beamer@slide {tab:indobert-dothardnegs-hyperparameter}{46}
+\beamer@slide {tab:indobert-kd-hyperparameter}{50}
+\beamer@slide {tab:indobertcat-hasil}{52}
+\beamer@slide {tab:evaluasisemuamodel}{56}

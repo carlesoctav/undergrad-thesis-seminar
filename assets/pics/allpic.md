@@ -94,3 +94,12 @@
 ![](DL-IR.png)
 
 ![](google-ir.png)
+
+![](google-ir.png)
+
+![](google-bert.png)
+
+![](EnglishNLP.png)![](EnglishNLP.png)
+
+![](IndoNLP.png)
+
